@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Local-first income statement analytics for Excel, XLS, and CSV workbooks.">
+  <title>Lucent P&amp;L — Income Statement Intelligence</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script defer src="js/vendor/xlsx.full.min.js"></script>
+  <script defer src="js/vendor/chart.umd.js"></script>
+  <script defer src="js/excel-parser.js"></script>
+  <script defer src="js/financial-engine.js"></script>
+  <script defer src="js/filters.js"></script>
+  <script defer src="js/insights.js"></script>
+  <script defer src="js/charts.js"></script>
+  <script defer src="js/export.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to report</a>
+  <header class="command-bar">
+    <a class="brand" href="#" aria-label="Lucent P&L home">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M7 30V11l9 6 8-10 9 5v18H7Z"/><path d="m10 27 7-6 6 3 7-9"/></svg>
+      <span><b>Lucent P&amp;L</b><small>Income Statement Intelligence</small></span>
+    </a>
+    <div class="file-context" id="fileContext" hidden>
+      <span class="status-dot"></span><span id="fileName">Workbook</span>
+      <span class="context-divider"></span><span id="contextPeriod">—</span>
+    </div>
+    <div class="command-actions">
+      <button class="icon-button mobile-only" id="openFilters" aria-label="Open filters"><span>Filters</span><i id="filterCount">0</i></button>
+      <button class="button ghost report-only" id="newFileBtn" hidden>New file</button>
+      <button class="button ghost report-only" id="exportBtn" hidden>Export CSV</button>
+      <button class="button dark report-only" id="printBtn" hidden>Print / PDF</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="landing" id="landing">
+      <div class="landing-copy">
+        <p class="eyebrow">Financial reporting, resolved</p>
+        <h1>Turn accounting data into a decision-ready income statement.</h1>
+        <p class="lead">Upload a financial workbook to build an executive P&amp;L, trace movements, test classifications, and focus management attention.</p>
+        <div class="trust-line"><span class="shield">✓</span><span><b>Private by design.</b> Financial files are processed locally in your browser and never uploaded to a server.</span></div>
+      </div>
+      <div class="upload-panel" id="dropZone" tabindex="0" role="button" aria-label="Upload financial workbook">
+        <div class="upload-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M9 33V12a4 4 0 0 1 4-4h15l11 11v14a7 7 0 0 1-7 7H16a7 7 0 0 1-7-7Z"/><path d="M28 8v11h11M24 33V22m-5 5 5-5 5 5"/></svg></div>
+        <h2>Upload financial workbook</h2>
+        <p>Drop an Excel or CSV file here</p>
+        <button class="button primary" id="browseBtn">Choose file</button>
+        <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" hidden>
+        <small>XLSX, XLS or CSV · processed on this device</small>
+      </div>
+      <div class="landing-features">
+        <article><b>01</b><span><strong>Adaptive mapping</strong>Finds accounts, amounts, periods, budgets and business dimensions.</span></article>
+        <article><b>02</b><span><strong>Financial control</strong>Excludes likely balance-sheet and source subtotal rows before aggregation.</span></article>
+        <article><b>03</b><span><strong>Management signal</strong>Surfaces material drivers, margin changes and investigation priorities.</span></article>
+      </div>
+    </section>
+
+    <section class="mapping-view" id="mappingView" hidden>
+      <div class="view-heading">
+        <div><p class="eyebrow">Import review</p><h1>Confirm the financial structure</h1><p id="mappingSummary">Review detected fields before the report is calculated.</p></div>
+        <button class="button ghost" id="cancelMapping">Cancel</button>
+      </div>
+      <div class="review-grid">
+        <section class="panel sheet-panel"><div class="panel-heading"><div><h2>Worksheet</h2><p>Select the table containing financial data.</p></div></div><label class="field"><span>Data worksheet</span><select id="sheetSelect"></select></label><div class="workbook-stats" id="workbookStats"></div></section>
+        <section class="panel mapping-panel"><div class="panel-heading"><div><h2>Column mapping</h2><p>Required fields are marked. Uncertain detection always needs confirmation.</p></div><span class="badge" id="mappingConfidence">Review</span></div><div id="mappingFields" class="mapping-fields"></div></section>
+        <section class="panel quality-panel"><div class="panel-heading"><div><h2>Data quality</h2><p>Nothing is silently discarded.</p></div></div><div class="quality-cards" id="qualityCards"></div><ul class="issue-list" id="qualityIssues"></ul></section>
+      </div>
+      <div class="mapping-footer"><p id="mappingError" class="form-error" role="alert"></p><button class="button dark" id="buildReportBtn">Build income statement</button></div>
+    </section>
+
+    <section class="report-view" id="reportView" hidden>
+      <aside class="filter-drawer" id="filterDrawer" aria-label="Report filters">
+        <div class="filter-header"><div><p class="eyebrow">Report controls</p><h2>Filters</h2></div><button class="close-button mobile-only" id="closeFilters" aria-label="Close filters">×</button></div>
+        <div id="filterControls" class="filter-controls"></div>
+        <button class="button ghost full" id="resetFilters">Reset filters</button>
+        <div class="side-note"><b>Comparison basis</b><p id="comparisonBasis">Latest period versus previous period</p></div>
+      </aside>
+
+      <div class="report-canvas">
+        <div class="report-heading">
+          <div><p class="eyebrow">Executive performance brief</p><h1>Income Statement</h1><p id="reportSubtitle">Filtered management view</p></div>
+          <div class="period-switcher"><label for="periodSelect">Reporting period</label><select id="periodSelect"></select></div>
+        </div>
+        <div class="active-filters" id="activeFilters" aria-live="polite"></div>
+        <section class="kpi-grid" id="kpiGrid" aria-label="Key performance indicators"></section>
+
+        <div class="workspace-grid">
+          <section class="panel statement-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Core report</p><h2>Statement of performance</h2><p id="statementCaption">Current period versus previous period</p></div><div class="table-tools"><label class="compact-field">Numbers<select id="numberScale"><option value="1">Actual</option><option value="1000">Thousands</option><option value="1000000">Millions</option></select></label><button class="text-button" id="expandAll">Expand all</button></div></div>
+            <div class="table-wrap"><table class="financial-table"><thead><tr><th>Financial line</th><th>Current</th><th>Previous</th><th>Variance</th><th>Variance %</th><th>% Revenue</th></tr></thead><tbody id="statementBody"></tbody></table></div>
+            <div id="statementNotice" class="statement-notice" hidden></div>
+          </section>
+          <section class="panel insights-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Decision support</p><h2>Management attention</h2></div></div>
+            <div id="attentionList" class="attention-list"></div>
+            <div class="insight-block"><h3>Analytical observations</h3><ol id="insightsList"></ol></div>
+          </section>
+        </div>
+
+        <div class="chart-grid">
+          <section class="panel chart-panel wide"><div class="panel-heading"><div><p class="eyebrow">Movement</p><h2>Profitability trend</h2></div><select id="trendMetric" class="minimal-select"></select></div><div class="chart-box"><canvas id="trendChart"></canvas><div class="chart-empty" hidden>No period trend available</div></div></section>
+          <section class="panel chart-panel"><div class="panel-heading"><div><p class="eyebrow">Cost structure</p><h2>Expense composition</h2></div></div><div class="chart-box"><canvas id="expenseChart"></canvas><div class="chart-empty" hidden>No expense data available</div></div></section>
+          <section class="panel chart-panel"><div class="panel-heading"><div><p class="eyebrow">Profit bridge</p><h2>Waterfall</h2></div></div><div class="chart-box"><canvas id="waterfallChart"></canvas><div class="chart-empty" hidden>Revenue and profit lines are not supported by the current data</div></div></section>
+        </div>
+
+        <div class="drivers-grid">
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">Variance contribution</p><h2>Top positive drivers</h2></div></div><div id="positiveDrivers" class="driver-list"></div></section>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">Variance contribution</p><h2>Top negative drivers</h2></div></div><div id="negativeDrivers" class="driver-list"></div></section>
+        </div>
+
+        <section class="panel expense-panel"><div class="panel-heading"><div><p class="eyebrow">Materiality view</p><h2>Expense analysis</h2><p>Ranked by current-period operating expense.</p></div><label class="search-field"><span aria-hidden="true">⌕</span><input id="accountSearch" type="search" placeholder="Search account or code"></label></div><div class="table-wrap"><table><thead><tr><th>Account</th><th>Classification</th><th>Current</th><th>Previous</th><th>Variance</th><th>% OPEX</th></tr></thead><tbody id="expenseBody"></tbody></table></div></section>
+
+        <section class="panel mapping-manager"><div class="panel-heading"><div><p class="eyebrow">Financial governance</p><h2>Account classification manager</h2><p>Review inferred classifications. Changes are saved on this device.</p></div><div class="manager-actions"><label><input type="checkbox" id="unmappedOnly"> Unmapped only</label><button class="button ghost" id="applyMappings">Apply changes</button></div></div><div class="table-wrap manager-wrap"><table><thead><tr><th>Account code</th><th>Account name</th><th>Detected classification</th><th>Confidence</th></tr></thead><tbody id="mappingManagerBody"></tbody></table></div></section>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="loader" hidden role="status" aria-live="polite"><div class="loader-card"><div class="loader-mark"><span></span><span></span><span></span></div><h2 id="loaderTitle">Reading workbook</h2><p id="loaderDetail">Inspecting worksheets and columns</p><div class="progress"><i id="loaderProgress"></i></div></div></div>
+  <dialog id="drillDialog" class="drill-dialog"><div class="dialog-heading"><div><p class="eyebrow">Source records</p><h2 id="drillTitle">Account detail</h2><p id="drillMeta"></p></div><button class="close-button" id="closeDrill" aria-label="Close">×</button></div><div class="dialog-tools"><input id="drillSearch" type="search" placeholder="Search records"><button class="button ghost" id="drillExport">Export records</button></div><div class="table-wrap"><table><thead id="drillHead"></thead><tbody id="drillBody"></tbody></table></div><div class="pagination"><button id="prevPage">Previous</button><span id="pageStatus"></span><button id="nextPage">Next</button></div></dialog>
+  <footer><span>Built by <b>X Academy</b></span><span>Learn. Analyse. Lead.</span></footer>
+</body>
+</html>
