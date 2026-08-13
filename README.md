@@ -23,6 +23,8 @@ Lucent P&L is a static, local-first financial analytics application that convert
 - Source-record drill-down with search, pagination, and CSV export
 - Filtered statement export and A4 landscape print/PDF layout
 - Responsive desktop, tablet, and mobile interface
+- Complete English/Arabic interface switching with LTR/RTL layouts
+- Downloadable structured Excel template covering every supported analytical dimension
 
 ## Financial processing
 
